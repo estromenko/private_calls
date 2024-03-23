@@ -1,47 +1,48 @@
-<.header>
-  Listing Chats
-  <:actions>
-    <.link patch={~p"/admin/chats/new"}>
-      <.button>New Chat</.button>
-    </.link>
-  </:actions>
-</.header>
+<div class="p-4">
+  <.header>
+    Listing Chats
+    <:actions>
+      <.link patch={~p"/admin/chats/new"}>
+        <.button>New Chat</.button>
+      </.link>
+    </:actions>
+  </.header>
+  <.table
+    id="chats"
+    rows={@streams.chats}
+    row_click={fn {_id, chat} -> JS.navigate(~p"/admin/chats/#{chat}") end}
+  >
+    <:col :let={{_id, chat}} label="Name"><%= chat.name %></:col>
+    <:col :let={{_id, chat}} label="Owner"><%= chat.owner %></:col>
+    <:action :let={{_id, chat}}>
+      <div class="sr-only">
+        <.link navigate={~p"/admin/chats/#{chat}"}>Show</.link>
+      </div>
+      <.link patch={~p"/admin/chats/#{chat}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={{id, chat}}>
+      <.link
+        phx-click={JS.push("delete", value: %{id: chat.id}) |> hide("##{id}")}
+        data-confirm="Are you sure?"
+      >
+        Delete
+      </.link>
+    </:action>
+  </.table>
 
-<.table
-  id="chats"
-  rows={@streams.chats}
-  row_click={fn {_id, chat} -> JS.navigate(~p"/admin/chats/#{chat}") end}
->
-  <:col :let={{_id, chat}} label="Name"><%= chat.name %></:col>
-  <:col :let={{_id, chat}} label="Owner"><%= chat.owner %></:col>
-  <:action :let={{_id, chat}}>
-    <div class="sr-only">
-      <.link navigate={~p"/admin/chats/#{chat}"}>Show</.link>
-    </div>
-    <.link patch={~p"/admin/chats/#{chat}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={{id, chat}}>
-    <.link
-      phx-click={JS.push("delete", value: %{id: chat.id}) |> hide("##{id}")}
-      data-confirm="Are you sure?"
-    >
-      Delete
-    </.link>
-  </:action>
-</.table>
-
-<.modal
-  :if={@live_action in [:new, :edit]}
-  id="chat-modal"
-  show
-  on_cancel={JS.patch(~p"/admin/chats")}
->
-  <.live_component
-    module={PrivateCallsWeb.ChatLive.FormComponent}
-    id={@chat.id || :new}
-    title={@page_title}
-    action={@live_action}
-    chat={@chat}
-    patch={~p"/admin/chats"}
-  />
-</.modal>
+  <.modal
+    :if={@live_action in [:new, :edit]}
+    id="chat-modal"
+    show
+    on_cancel={JS.patch(~p"/admin/chats")}
+  >
+    <.live_component
+      module={PrivateCallsWeb.ChatLive.FormComponent}
+      id={@chat.id || :new}
+      title={@page_title}
+      action={@live_action}
+      chat={@chat}
+      patch={~p"/admin/chats"}
+    />
+  </.modal>
+</div>
