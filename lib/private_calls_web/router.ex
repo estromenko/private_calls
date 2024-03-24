@@ -20,7 +20,7 @@ defmodule PrivateCallsWeb.Router do
   scope "/", PrivateCallsWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", LandingController, :index
   end
 
   # Other scopes may use custom stacks.
@@ -57,6 +57,7 @@ defmodule PrivateCallsWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{PrivateCallsWeb.UserAuth, :ensure_authenticated}] do
+      live "/chats", MainLive.Index
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end
