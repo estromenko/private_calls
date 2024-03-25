@@ -40,7 +40,7 @@ defmodule PrivateCallsWeb.MainLive.Index do
     <.app_header current_user={@current_user} />
 
     <div class="flex">
-      <aside class="flex flex-col bg-zinc-900 w-48 h-screen">
+      <aside class="flex flex-col bg-zinc-900 w-48 h-[calc(100vh-50px)]">
         <div class="p-2">
           <.form for={@form} phx-change="search">
             <.input placeholder="Search" id="search" field={@form[:search]} />
@@ -57,9 +57,14 @@ defmodule PrivateCallsWeb.MainLive.Index do
           </.link>
         <% end %>
       </aside>
-      <%= if @selected_chat do %>
-        <div><%= @selected_chat.name %></div>
-      <% end %>
+      <div class="flex flex-col justify-between p-4 w-full">
+        <%= if @selected_chat do %>
+          <%= @selected_chat.name %>
+        <% end %>
+        <div>
+          <.input name="test" value="" />
+        </div>
+      </div>
     </div>
     """
   end
