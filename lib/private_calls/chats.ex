@@ -39,6 +39,14 @@ defmodule PrivateCalls.Chats do
 
   def get_chat(id), do: Repo.get(Chat, id)
 
+  def search_chats_by_name(name) do
+    Repo.all(
+      from chat in Chat,
+        where: like(chat.name, ^"%#{name}%"),
+        select: %{id: chat.id, name: chat.name, owner: chat.owner}
+    )
+  end
+
   @doc """
   Creates a chat.
 

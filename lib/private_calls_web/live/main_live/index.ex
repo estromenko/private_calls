@@ -7,7 +7,12 @@ defmodule PrivateCallsWeb.MainLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     chats = Chats.list_chats()
-    {:ok, socket |> assign(:chats, chats) |> assign(:selected_chat, nil)}
+
+    {:ok,
+     socket
+     |> assign(chats: chats)
+     |> assign(selected_chat: nil)
+     |> assign(form: to_form(%{"search" => ""}))}
   end
 
   @impl true
@@ -18,6 +23,18 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
+  def handle_event("search", %{"search" => search}, socket) do
+    chats =
+      if search != "" do
+        Chats.search_chats_by_name(search)
+      else
+        Chats.list_chats()
+      end
+
+    {:noreply, assign(socket, chats: chats)}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <.app_header current_user={@current_user} />
@@ -25,7 +42,9 @@ defmodule PrivateCallsWeb.MainLive.Index do
     <div class="flex">
       <aside class="flex flex-col bg-zinc-900 w-48 h-screen">
         <div class="p-2">
-          <.input placeholder="Search" name="search" value="" />
+          <.form for={@form} phx-change="search">
+            <.input placeholder="Search" id="search" field={@form[:search]} />
+          </.form>
         </div>
         <%= for chat <- @chats do %>
           <.link patch={~p"/chats/#{chat.id}"}>
