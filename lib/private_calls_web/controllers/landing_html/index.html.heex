@@ -1,8 +1,10 @@
 <div class="min-h-[calc(100vh-150px)] flex flex-col justify-center items-center gap-2">
   <h1 class="text-center font-bold text-6xl">PrivateCalls</h1>
   <div>
-    <.button>
-      <a href={~p"/chats"}>Get Started</a>
-    </.button>
+    <.link patch={~p"/chats"}>
+      <.button>
+        Get Started
+      </.button>
+    </.link>
   </div>
 </div>
