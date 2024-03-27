@@ -43,7 +43,7 @@ defmodule PrivateCalls.Chats do
     Repo.all(
       from chat in Chat,
         where: like(chat.name, ^"%#{name}%"),
-        select: %{id: chat.id, name: chat.name, owner: chat.owner}
+        select: chat
     )
   end
 

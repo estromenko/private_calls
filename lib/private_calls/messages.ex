@@ -37,6 +37,15 @@ defmodule PrivateCalls.Messages do
   """
   def get_message!(id), do: Repo.get!(Message, id)
 
+  def get_chat_messages(chat_id) do
+    Repo.all(
+      from message in Message,
+        where: message.chat_id == ^chat_id,
+        select: message,
+        order_by: [message.id]
+    )
+  end
+
   @doc """
   Creates a message.
 
