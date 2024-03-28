@@ -1,4 +1,4 @@
-defmodule PrivateCallsWeb.MessageLive.FormComponent do
+defmodule PrivateCallsWeb.Admin.MessageLive.FormComponent do
   use PrivateCallsWeb, :live_component
 
   alias PrivateCalls.Messages

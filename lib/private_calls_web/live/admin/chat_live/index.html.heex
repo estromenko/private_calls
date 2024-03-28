@@ -37,7 +37,7 @@
     on_cancel={JS.patch(~p"/admin/chats")}
   >
     <.live_component
-      module={PrivateCallsWeb.ChatLive.FormComponent}
+      module={PrivateCallsWeb.Admin.ChatLive.FormComponent}
       id={@chat.id || :new}
       title={@page_title}
       action={@live_action}

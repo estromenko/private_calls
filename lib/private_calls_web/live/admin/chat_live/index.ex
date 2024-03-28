@@ -1,4 +1,4 @@
-defmodule PrivateCallsWeb.ChatLive.Index do
+defmodule PrivateCallsWeb.Admin.ChatLive.Index do
   use PrivateCallsWeb, :live_view
 
   alias PrivateCalls.Chats
@@ -33,7 +33,7 @@ defmodule PrivateCallsWeb.ChatLive.Index do
   end
 
   @impl true
-  def handle_info({PrivateCallsWeb.ChatLive.FormComponent, {:saved, chat}}, socket) do
+  def handle_info({PrivateCallsWeb.Admin.ChatLive.FormComponent, {:saved, chat}}, socket) do
     {:noreply, stream_insert(socket, :chats, chat)}
   end
 

@@ -1,7 +1,7 @@
-defmodule PrivateCallsWeb.MessageLive.Show do
+defmodule PrivateCallsWeb.Admin.ChatLive.Show do
   use PrivateCallsWeb, :live_view
 
-  alias PrivateCalls.Messages
+  alias PrivateCalls.Chats
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,9 +13,9 @@ defmodule PrivateCallsWeb.MessageLive.Show do
     {:noreply,
      socket
      |> assign(:page_title, page_title(socket.assigns.live_action))
-     |> assign(:message, Messages.get_message!(id))}
+     |> assign(:chat, Chats.get_chat!(id))}
   end
 
-  defp page_title(:show), do: "Show Message"
-  defp page_title(:edit), do: "Edit Message"
+  defp page_title(:show), do: "Show Chat"
+  defp page_title(:edit), do: "Edit Chat"
 end

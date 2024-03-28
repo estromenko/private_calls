@@ -1,4 +1,4 @@
-defmodule PrivateCallsWeb.MessageLive.Index do
+defmodule PrivateCallsWeb.Admin.MessageLive.Index do
   use PrivateCallsWeb, :live_view
 
   alias PrivateCalls.Messages
@@ -33,7 +33,7 @@ defmodule PrivateCallsWeb.MessageLive.Index do
   end
 
   @impl true
-  def handle_info({PrivateCallsWeb.MessageLive.FormComponent, {:saved, message}}, socket) do
+  def handle_info({PrivateCallsWeb.Admin.MessageLive.FormComponent, {:saved, message}}, socket) do
     {:noreply, stream_insert(socket, :messages, message)}
   end
 

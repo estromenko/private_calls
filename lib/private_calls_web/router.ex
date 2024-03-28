@@ -71,17 +71,17 @@ defmodule PrivateCallsWeb.Router do
 
     live_session :require_superuser,
       on_mount: [{PrivateCallsWeb.UserAuth, :ensure_authenticated}] do
-      live "/chats", ChatLive.Index, :index
-      live "/chats/new", ChatLive.Index, :new
+      live "/chats", Admin.ChatLive.Index, :index
+      live "/chats/new", Admin.ChatLive.Index, :new
       live "/chats/:id/edit", ChatLive.Index, :edit
-      live "/chats/:id", ChatLive.Show, :show
-      live "/chats/:id/show/edit", ChatLive.Show, :edit
+      live "/chats/:id", Admin.ChatLive.Show, :show
+      live "/chats/:id/show/edit", Admin.ChatLive.Show, :edit
 
-      live "/messages", MessageLive.Index, :index
-      live "/messages/new", MessageLive.Index, :new
-      live "/messages/:id/edit", MessageLive.Index, :edit
-      live "/messages/:id", MessageLive.Show, :show
-      live "/messages/:id/show/edit", MessageLive.Show, :edit
+      live "/messages", Admin.MessageLive.Index, :index
+      live "/messages/new", Admin.MessageLive.Index, :new
+      live "/messages/:id/edit", Admin.MessageLive.Index, :edit
+      live "/messages/:id", Admin.MessageLive.Show, :show
+      live "/messages/:id/show/edit", Admin.MessageLive.Show, :edit
     end
 
     live_dashboard "/dashboard",

@@ -1,4 +1,4 @@
-defmodule PrivateCallsWeb.MessageLiveTest do
+defmodule PrivateCallsWeb.Admin.MessageLiveTest do
   use PrivateCallsWeb.ConnCase
 
   import Phoenix.LiveViewTest

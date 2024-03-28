@@ -38,7 +38,7 @@
   on_cancel={JS.patch(~p"/admin/messages")}
 >
   <.live_component
-    module={PrivateCallsWeb.MessageLive.FormComponent}
+    module={PrivateCallsWeb.Admin.MessageLive.FormComponent}
     id={@message.id || :new}
     title={@page_title}
     action={@live_action}

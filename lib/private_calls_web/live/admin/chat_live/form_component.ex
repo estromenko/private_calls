@@ -1,4 +1,4 @@
-defmodule PrivateCallsWeb.ChatLive.FormComponent do
+defmodule PrivateCallsWeb.Admin.ChatLive.FormComponent do
   use PrivateCallsWeb, :live_component
 
   alias PrivateCalls.Chats
