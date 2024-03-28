@@ -9,6 +9,8 @@ defmodule PrivateCallsWeb.MainLive.Index do
   def mount(_params, _session, socket) do
     chats = Chats.list_chats()
 
+    PrivateCallsWeb.Endpoint.subscribe("notifications")
+
     {:ok,
      socket
      |> assign(chats: chats)
@@ -28,6 +30,7 @@ defmodule PrivateCallsWeb.MainLive.Index do
       PrivateCallsWeb.Endpoint.unsubscribe("chat_#{socket.assigns.selected_chat.id}")
     end
 
+    PrivateCallsWeb.Endpoint.subscribe("notifications")
     PrivateCallsWeb.Endpoint.subscribe("chat_#{selected_chat_id}")
     {:noreply, socket |> assign(selected_chat: selected_chat) |> assign(messages: messages)}
   end
@@ -46,7 +49,7 @@ defmodule PrivateCallsWeb.MainLive.Index do
       chat_id: socket.assigns.selected_chat.id
     }
 
-    Messages.create_message(message)
+    {:ok, message} = Messages.create_message(message)
 
     PrivateCallsWeb.Endpoint.broadcast(
       "chat_#{socket.assigns.selected_chat.id}",
@@ -54,17 +57,45 @@ defmodule PrivateCallsWeb.MainLive.Index do
       message
     )
 
+    PrivateCallsWeb.Endpoint.broadcast(
+      "notifications",
+      "new_notification",
+      message
+    )
+
     {:noreply, assign(socket, message_form: to_form(%{"message" => ""}))}
   end
 
   @impl true
-  def handle_event("change_message", %{"message" => message_text}, socket) do
+  def handle_event("message_typing", %{"message" => message_text}, socket) do
     {:noreply, assign(socket, message_form: to_form(%{"message" => message_text}))}
   end
 
   @impl true
-  def handle_event("process_escape", _params, socket) do
+  def handle_event("process_escape_key", _params, socket) do
     {:noreply, push_patch(socket, to: ~p"/chats/")}
+  end
+
+  @impl true
+  def handle_event("delete_message", %{"id" => id}, socket) do
+    {message_id, _} = Integer.parse(id)
+
+    message = Enum.find(socket.assigns.messages, &(&1.id == message_id))
+    Messages.delete_message(message)
+
+    PrivateCallsWeb.Endpoint.broadcast(
+      "chat_#{socket.assigns.selected_chat.id}",
+      "delete_message",
+      message
+    )
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(%{event: "delete_message", payload: message}, socket) do
+    messages = Enum.filter(socket.assigns.messages, &(&1.id != message.id))
+    {:noreply, assign(socket, :messages, messages)}
   end
 
   @impl true
@@ -73,11 +104,25 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
+  def handle_info(%{event: "new_notification", payload: message}, socket) do
+    if message.chat_id == socket.assigns.selected_chat.id do
+      {:noreply, socket}
+    else
+      chat = Chats.get_chat(message.chat_id)
+      {:noreply, put_flash(socket, :message, "#{chat.name}: #{message.text}")}
+    end
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
+    <.flash_group flash={@flash} />
     <.app_header current_user={@current_user} />
-
-    <div class="flex h-[calc(100vh-50px)] w-full" phx-window-keydown="process_escape" phx-key="Escape">
+    <div
+      class="flex h-[calc(100vh-50px)] w-full"
+      phx-window-keydown="process_escape_key"
+      phx-key="Escape"
+    >
       <aside class="flex flex-col bg-zinc-900 w-72">
         <div class="p-2">
           <.form for={@search_form} phx-change="search">
@@ -110,10 +155,15 @@ defmodule PrivateCallsWeb.MainLive.Index do
                   ]}>
                     <span><%= message.text %></span>
                     <%= if message.sender_id == @current_user.id do %>
-                      <div class={[
-                        "transition-all opacity-0 group-hover:opacity-100",
-                        "absolute top-[-30px] right-0 bg-white shadow p-1 rounded"
-                      ]}>
+                      <div
+                        type="button"
+                        phx-click="delete_message"
+                        phx-value-id={message.id}
+                        class={[
+                          "transition-all opacity-0 group-hover:opacity-100",
+                          "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
+                        ]}
+                      >
                         <.icon name="hero-trash" class="text-black h-4 w-4" />
                       </div>
                     <% end %>
@@ -122,8 +172,8 @@ defmodule PrivateCallsWeb.MainLive.Index do
               <% end %>
             </div>
             <div class="p-4">
-              <.form for={@message_form} phx-submit="send_message" phx-change="change_message">
-                <.input field={@message_form[:message]} />
+              <.form for={@message_form} phx-submit="send_message" phx-change="message_typing">
+                <.input field={@message_form[:message]} placeholder="Message" />
               </.form>
             </div>
           </div>
