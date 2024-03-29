@@ -170,26 +170,36 @@ defmodule PrivateCallsWeb.MainLive.Index do
                       message.sender_id == @current_user.id && "items-end"
                     ]}>
                       <span class="text-xs text-slate-600"><%= message.sender.email %></span>
-                      <div class={[
-                        "group p-2 inline-block shadow rounded relative",
-                        message.sender_id == @current_user.id && "bg-slate-800 text-white"
-                      ]}>
-                        <span><%= message.text %></span>
-                        <%= if message.sender_id == @current_user.id do %>
-                          <div
-                            id={"message-#{message.id}"}
-                            type="button"
-                            phx-hook="Message"
-                            phx-click="delete_message"
-                            phx-value-id={message.id}
-                            class={[
-                              "transition-all opacity-0 group-hover:opacity-100",
-                              "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
-                            ]}
-                          >
-                            <.icon name="hero-trash" class="text-black h-4 w-4" />
+                      <div class="flex items-center gap-2">
+                        <%= if message.sender_id != @current_user.id do %>
+                          <div class={[
+                            "flex justify-center items-center w-9 h-9 shadow-lg",
+                            "rounded-full font-bold bg-slate-800 text-white"
+                          ]}>
+                            <%= message.sender.email |> String.at(0) |> String.upcase() %>
                           </div>
                         <% end %>
+                        <div class={[
+                          "group p-2 inline-block shadow rounded-lg relative",
+                          message.sender_id == @current_user.id && "bg-slate-800 text-white"
+                        ]}>
+                          <span><%= message.text %></span>
+                          <%= if message.sender_id == @current_user.id do %>
+                            <div
+                              id={"message-#{message.id}"}
+                              type="button"
+                              phx-hook="Message"
+                              phx-click="delete_message"
+                              phx-value-id={message.id}
+                              class={[
+                                "transition-all opacity-0 group-hover:opacity-100",
+                                "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
+                              ]}
+                            >
+                              <.icon name="hero-trash" class="text-black h-4 w-4" />
+                            </div>
+                          <% end %>
+                        </div>
                       </div>
                     </div>
                   </div>
