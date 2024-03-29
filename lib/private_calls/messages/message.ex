@@ -1,11 +1,12 @@
 defmodule PrivateCalls.Messages.Message do
+  alias PrivateCalls.Users.User
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "messages" do
     field :text, :string
     field :chat_id, :id
-    field :sender_id, :id
+    belongs_to :sender, User
 
     timestamps(type: :utc_datetime)
   end

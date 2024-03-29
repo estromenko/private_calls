@@ -43,13 +43,14 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
   @impl true
   def handle_event("send_message", %{"message" => message_text}, socket) do
-    message = %{
-      text: message_text,
-      sender_id: socket.assigns.current_user.id,
-      chat_id: socket.assigns.selected_chat.id
-    }
+    {:ok, message} =
+      Messages.create_message(%{
+        text: message_text,
+        sender_id: socket.assigns.current_user.id,
+        chat_id: socket.assigns.selected_chat.id
+      })
 
-    {:ok, message} = Messages.create_message(message)
+    message = Messages.get_message(message.id)
 
     PrivateCallsWeb.Endpoint.broadcast(
       "chat_#{socket.assigns.selected_chat.id}",
@@ -132,45 +133,65 @@ defmodule PrivateCallsWeb.MainLive.Index do
         <div class="w-full">
           <%= for chat <- @chats do %>
             <.link patch={~p"/chats/#{chat.id}"}>
-              <.button class={[
-                "rounded-none w-full text-start outline-none",
-                @selected_chat && chat.id == @selected_chat.id && "!text-slate-400"
+              <div class={[
+                "rounded-none w-full text-start outline-none text-slate-400",
+                "flex gap-2 items-center transition-colors p-2 font-bold",
+                @selected_chat && chat.id == @selected_chat.id && "!text-white !bg-slate-800"
               ]}>
+                <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center text-xl text-black">
+                  <%= chat.name |> String.at(0) |> String.upcase() %>
+                </div>
                 <%= chat.name %>
-              </.button>
+              </div>
             </.link>
           <% end %>
         </div>
       </aside>
       <div class="w-full">
-        <%= if @selected_chat do %>
+        <%= if !@selected_chat do %>
+          <div class="h-full flex justify-center items-center">
+            <div>Select chat to start messaging</div>
+          </div>
+        <% else %>
           <div class="h-full flex flex-col justify-between">
-            <div class="bg-zinc-600 text-white p-4"><%= @selected_chat.name %></div>
-            <div class="flex flex-col gap-4 overflow-y-scroll h-full p-4">
-              <%= for message <- @messages do %>
-                <div class={[message.sender_id == @current_user.id && "flex justify-end"]}>
-                  <div class={[
-                    "group p-2 inline-block shadow rounded relative",
-                    message.sender_id == @current_user.id && "bg-slate-400 text-white"
-                  ]}>
-                    <span><%= message.text %></span>
-                    <%= if message.sender_id == @current_user.id do %>
-                      <div
-                        type="button"
-                        phx-click="delete_message"
-                        phx-value-id={message.id}
-                        class={[
-                          "transition-all opacity-0 group-hover:opacity-100",
-                          "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
-                        ]}
-                      >
-                        <.icon name="hero-trash" class="text-black h-4 w-4" />
+            <div class="bg-slate-800 text-white p-4"><%= @selected_chat.name %></div>
+            <%= if length(@messages) == 0 do %>
+              <div class="text-center">There are no messages yet</div>
+            <% else %>
+              <div id="messages" class="flex flex-col gap-4 overflow-y-scroll h-full p-4">
+                <%= for message <- @messages do %>
+                  <div class={[message.sender_id == @current_user.id && "flex justify-end"]}>
+                    <div class={[
+                      "flex flex-col items-start",
+                      message.sender_id == @current_user.id && "items-end"
+                    ]}>
+                      <span class="text-xs text-slate-600"><%= message.sender.email %></span>
+                      <div class={[
+                        "group p-2 inline-block shadow rounded relative",
+                        message.sender_id == @current_user.id && "bg-slate-800 text-white"
+                      ]}>
+                        <span><%= message.text %></span>
+                        <%= if message.sender_id == @current_user.id do %>
+                          <div
+                            id={"message-#{message.id}"}
+                            type="button"
+                            phx-hook="Message"
+                            phx-click="delete_message"
+                            phx-value-id={message.id}
+                            class={[
+                              "transition-all opacity-0 group-hover:opacity-100",
+                              "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
+                            ]}
+                          >
+                            <.icon name="hero-trash" class="text-black h-4 w-4" />
+                          </div>
+                        <% end %>
                       </div>
-                    <% end %>
+                    </div>
                   </div>
-                </div>
-              <% end %>
-            </div>
+                <% end %>
+              </div>
+            <% end %>
             <div class="p-4">
               <.form for={@message_form} phx-submit="send_message" phx-change="message_typing">
                 <.input field={@message_form[:message]} placeholder="Message" />
