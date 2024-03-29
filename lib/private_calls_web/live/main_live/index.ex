@@ -43,28 +43,32 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
   @impl true
   def handle_event("send_message", %{"message" => message_text}, socket) do
-    {:ok, message} =
-      Messages.create_message(%{
-        text: message_text,
-        sender_id: socket.assigns.current_user.id,
-        chat_id: socket.assigns.selected_chat.id
-      })
+    if message_text != "" do
+      {:ok, message} =
+        Messages.create_message(%{
+          text: message_text,
+          sender_id: socket.assigns.current_user.id,
+          chat_id: socket.assigns.selected_chat.id
+        })
 
-    message = Messages.get_message(message.id)
+      message = Messages.get_message(message.id)
 
-    PrivateCallsWeb.Endpoint.broadcast(
-      "chat_#{socket.assigns.selected_chat.id}",
-      "new_message",
-      message
-    )
+      PrivateCallsWeb.Endpoint.broadcast(
+        "chat_#{socket.assigns.selected_chat.id}",
+        "new_message",
+        message
+      )
 
-    PrivateCallsWeb.Endpoint.broadcast(
-      "notifications",
-      "new_notification",
-      message
-    )
+      PrivateCallsWeb.Endpoint.broadcast(
+        "notifications",
+        "new_notification",
+        message
+      )
 
-    {:noreply, assign(socket, message_form: to_form(%{"message" => ""}))}
+      {:noreply, assign(socket, message_form: to_form(%{"message" => ""}))}
+    else
+      {:noreply, socket}
+    end
   end
 
   @impl true
