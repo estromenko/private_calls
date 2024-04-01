@@ -17,7 +17,8 @@ defmodule PrivateCallsWeb.MainLive.Index do
      |> assign(selected_chat: nil)
      |> assign(messages: [])
      |> assign(search_form: to_form(%{"search" => ""}))
-     |> assign(message_form: to_form(%{"message" => ""}))}
+     |> assign(message_form: to_form(%{"message" => ""}))
+     |> assign(typing_users: [])}
   end
 
   @impl true
@@ -73,6 +74,14 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
   @impl true
   def handle_event("message_typing", %{"message" => message_text}, socket) do
+    PrivateCallsWeb.Endpoint.broadcast(
+      "chat_#{socket.assigns.selected_chat.id}",
+      "typing",
+      socket.assigns.current_user
+    )
+
+    Process.send_after(__MODULE__, :cancel_typing, 1000)
+
     {:noreply, assign(socket, message_form: to_form(%{"message" => message_text}))}
   end
 
@@ -101,6 +110,21 @@ defmodule PrivateCallsWeb.MainLive.Index do
   def handle_info(%{event: "delete_message", payload: message}, socket) do
     messages = Enum.filter(socket.assigns.messages, &(&1.id != message.id))
     {:noreply, assign(socket, :messages, messages)}
+  end
+
+  @impl true
+  def handle_info(%{event: "typing", payload: user}, socket) do
+    typing_users = socket.assigns.typing_users ++ [user]
+
+    Process.send_after(self(), %{event: :cancel_typing, payload: user}, 1000)
+    {:noreply, assign(socket, :typing_users, typing_users)}
+  end
+
+  @impl true
+  def handle_info(%{event: :cancel_typing, payload: not_typing_user}, socket) do
+    typing_users = List.delete(socket.assigns.typing_users, not_typing_user)
+
+    {:noreply, assign(socket, typing_users: typing_users)}
   end
 
   @impl true
@@ -140,6 +164,7 @@ defmodule PrivateCallsWeb.MainLive.Index do
               <div class={[
                 "rounded-none w-full text-start outline-none text-slate-400",
                 "flex gap-2 items-center transition-colors p-2 font-bold",
+                "hover:bg-slate-900",
                 @selected_chat && chat.id == @selected_chat.id && "!text-white !bg-slate-800"
               ]}>
                 <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center text-xl text-black">
@@ -207,6 +232,17 @@ defmodule PrivateCallsWeb.MainLive.Index do
               </div>
             <% end %>
             <div class="p-4">
+              <%= if length(@typing_users) > 0 do %>
+                <div class="text-xs text-slate-600 transition-all">
+                  <%= Enum.join(Enum.map(Enum.uniq(@typing_users), & &1.email), ", ") %>
+                  <%= if length(Enum.uniq(@typing_users)) == 1 do %>
+                    is
+                  <% else %>
+                    are
+                  <% end %>
+                  typing
+                </div>
+              <% end %>
               <.form for={@message_form} phx-submit="send_message" phx-change="message_typing">
                 <.input field={@message_form[:message]} placeholder="Message" />
               </.form>
