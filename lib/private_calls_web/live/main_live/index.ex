@@ -74,7 +74,8 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
   @impl true
   def handle_event("message_typing", %{"message" => message_text}, socket) do
-    PrivateCallsWeb.Endpoint.broadcast(
+    PrivateCallsWeb.Endpoint.broadcast_from(
+      self(),
       "chat_#{socket.assigns.selected_chat.id}",
       "typing",
       socket.assigns.current_user
