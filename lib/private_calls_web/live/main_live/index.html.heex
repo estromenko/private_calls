@@ -12,21 +12,19 @@
       </.form>
     </div>
     <div class="w-full">
-      <%= for chat <- @chats do %>
-        <.link patch={~p"/chats/#{chat.id}"}>
-          <div class={[
-            "rounded-none w-full text-start outline-none text-slate-400",
-            "flex gap-2 items-center transition-colors p-2 font-bold",
-            "hover:bg-slate-900",
-            @selected_chat && chat.id == @selected_chat.id && "!text-white !bg-slate-800"
-          ]}>
-            <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center text-xl text-black">
-              <%= chat.name |> String.at(0) |> String.upcase() %>
-            </div>
-            <%= chat.name %>
+      <.link :for={chat <- @chats} patch={~p"/chats/#{chat.id}"}>
+        <div class={[
+          "rounded-none w-full text-start outline-none text-slate-400",
+          "flex gap-2 items-center transition-colors p-2 font-bold",
+          "hover:bg-slate-900",
+          @selected_chat && chat.id == @selected_chat.id && "!text-white !bg-slate-800"
+        ]}>
+          <div class="bg-white rounded-full h-8 w-8 flex items-center justify-center text-xl text-black">
+            <%= chat.name |> String.at(0) |> String.upcase() %>
           </div>
-        </.link>
-      <% end %>
+          <%= chat.name %>
+        </div>
+      </.link>
     </div>
   </aside>
   <div class="w-full">
@@ -41,61 +39,60 @@
           <div class="text-center">There are no messages yet</div>
         <% else %>
           <div id="messages" class="flex flex-col gap-4 overflow-y-scroll h-full p-4">
-            <%= for message <- @messages do %>
-              <div class={[message.sender_id == @current_user.id && "flex justify-end"]}>
-                <div class={[
-                  "flex flex-col items-start",
-                  message.sender_id == @current_user.id && "items-end"
-                ]}>
-                  <span class="text-xs text-slate-600"><%= message.sender.email %></span>
-                  <div class="flex items-center gap-2">
-                    <%= if message.sender_id != @current_user.id do %>
-                      <div class={[
-                        "flex justify-center items-center w-9 h-9 shadow-lg",
-                        "rounded-full font-bold bg-slate-800 text-white"
-                      ]}>
-                        <%= message.sender.email |> String.at(0) |> String.upcase() %>
-                      </div>
-                    <% end %>
-                    <div class={[
-                      "group p-2 inline-block shadow rounded-lg relative",
-                      message.sender_id == @current_user.id && "bg-slate-800 text-white"
-                    ]}>
-                      <span><%= message.text %></span>
-                      <%= if message.sender_id == @current_user.id do %>
-                        <div
-                          id={"message-#{message.id}"}
-                          type="button"
-                          phx-hook="Message"
-                          phx-click="delete_message"
-                          phx-value-id={message.id}
-                          class={[
-                            "transition-all opacity-0 group-hover:opacity-100",
-                            "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
-                          ]}
-                        >
-                          <.icon name="hero-trash" class="text-black h-4 w-4" />
-                        </div>
-                      <% end %>
+            <div
+              :for={message <- @messages}
+              class={[message.sender_id == @current_user.id && "flex justify-end"]}
+            >
+              <div class={[
+                "flex flex-col items-start",
+                message.sender_id == @current_user.id && "items-end"
+              ]}>
+                <span class="text-xs text-slate-600"><%= message.sender.email %></span>
+                <div class="flex items-center gap-2">
+                  <div
+                    :if={message.sender_id != @current_user.id}
+                    class={[
+                      "flex justify-center items-center w-9 h-9 shadow-lg",
+                      "rounded-full font-bold bg-slate-800 text-white"
+                    ]}
+                  >
+                    <%= message.sender.email |> String.at(0) |> String.upcase() %>
+                  </div>
+                  <div class={[
+                    "group p-2 inline-block shadow rounded-lg relative",
+                    message.sender_id == @current_user.id && "bg-slate-800 text-white"
+                  ]}>
+                    <span><%= message.text %></span>
+                    <div
+                      :if={message.sender_id == @current_user.id}
+                      id={"message-#{message.id}"}
+                      type="button"
+                      phx-hook="Message"
+                      phx-click="delete_message"
+                      phx-value-id={message.id}
+                      class={[
+                        "transition-all opacity-0 group-hover:opacity-100",
+                        "absolute top-[-30px] right-0 bg-white shadow p-1 rounded cursor-pointer"
+                      ]}
+                    >
+                      <.icon name="hero-trash" class="text-black h-4 w-4" />
                     </div>
                   </div>
                 </div>
               </div>
-            <% end %>
+            </div>
           </div>
         <% end %>
         <div class="p-4">
-          <%= if length(@typing_users) > 0 do %>
-            <div class="text-xs text-slate-600 transition-all">
-              <%= Enum.join(Enum.map(Enum.uniq(@typing_users), & &1.email), ", ") %>
-              <%= if length(Enum.uniq(@typing_users)) == 1 do %>
-                is
-              <% else %>
-                are
-              <% end %>
-              typing
-            </div>
-          <% end %>
+          <div :if={length(@typing_users) > 0} class="text-xs text-slate-600 transition-all">
+            <%= Enum.join(Enum.map(Enum.uniq(@typing_users), & &1.email), ", ") %>
+            <%= if length(Enum.uniq(@typing_users)) == 1 do %>
+              is
+            <% else %>
+              are
+            <% end %>
+            typing
+          </div>
           <.form for={@message_form} phx-submit="send_message" phx-change="message_typing">
             <.input field={@message_form[:message]} placeholder="Message" />
           </.form>

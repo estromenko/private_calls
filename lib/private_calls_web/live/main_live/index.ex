@@ -44,7 +44,9 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
   @impl true
   def handle_event("send_message", %{"message" => message_text}, socket) do
-    if message_text != "" do
+    if message_text == "" do
+      {:noreply, socket}
+    else
       {:ok, message} =
         Messages.create_message(%{
           text: message_text,
@@ -67,8 +69,6 @@ defmodule PrivateCallsWeb.MainLive.Index do
       )
 
       {:noreply, assign(socket, message_form: to_form(%{"message" => ""}))}
-    else
-      {:noreply, socket}
     end
   end
 
@@ -115,16 +115,13 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
   @impl true
   def handle_info(%{event: "typing", payload: user}, socket) do
-    typing_users = socket.assigns.typing_users ++ [user]
-
     Process.send_after(self(), %{event: :cancel_typing, payload: user}, 1000)
-    {:noreply, assign(socket, :typing_users, typing_users)}
+    {:noreply, assign(socket, :typing_users, [socket.assigns.typing_users | user])}
   end
 
   @impl true
   def handle_info(%{event: :cancel_typing, payload: not_typing_user}, socket) do
     typing_users = List.delete(socket.assigns.typing_users, not_typing_user)
-
     {:noreply, assign(socket, typing_users: typing_users)}
   end
 
