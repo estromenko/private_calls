@@ -108,6 +108,23 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
+  def handle_event("rtc_message", %{"message" => message}, socket) do
+    PrivateCallsWeb.Endpoint.broadcast_from(
+      self(),
+      "chat_#{socket.assigns.selected_chat.id}",
+      "rtc_message",
+      message
+    )
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(%{event: "rtc_message", payload: message}, socket) do
+    {:noreply, push_event(socket, "rtc_message", message)}
+  end
+
+  @impl true
   def handle_info(%{event: "delete_message", payload: message}, socket) do
     messages = Enum.filter(socket.assigns.messages, &(&1.id != message.id))
     {:noreply, assign(socket, :messages, messages)}

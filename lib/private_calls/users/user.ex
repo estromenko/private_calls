@@ -2,6 +2,7 @@ defmodule PrivateCalls.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:email]}
   schema "users" do
     field :email, :string
     field :password, :string, virtual: true, redact: true

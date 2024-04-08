@@ -21,6 +21,7 @@ import "phoenix_html"
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import { handleVideo, makeCall } from "./video"
 
 const hooks = {}
 
@@ -31,6 +32,16 @@ hooks.Message = {
   }
 }
 
+hooks.Chat = {
+  mounted() {
+    const configuration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] }
+    const peerConnection = new RTCPeerConnection(configuration)
+
+    handleVideo(this, peerConnection)
+
+    window.addEventListener("make_call", () => makeCall(this, peerConnection))
+  }
+}
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {
