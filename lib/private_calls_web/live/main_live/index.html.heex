@@ -38,7 +38,11 @@
         <%= if length(@messages) == 0 do %>
           <div class="text-center">There are no messages yet</div>
         <% else %>
-          <div id="messages" class="flex flex-col gap-4 overflow-y-scroll h-full p-4">
+          <div
+            id="messages"
+            phx-hook="Chat"
+            class="flex flex-col gap-4 overflow-y-scroll h-full p-4"
+          >
             <div
               :for={message <- @messages}
               class={[message.sender_id == @current_user.id && "flex justify-end"]}
@@ -93,11 +97,29 @@
             <% end %>
             typing
           </div>
-          <.form for={@message_form} phx-submit="send_message" phx-change="message_typing">
-            <.input field={@message_form[:message]} placeholder="Message" />
+          <.form
+            for={@message_form}
+            class="flex gap-3"
+            phx-submit="send_message"
+            phx-change="message_typing"
+          >
+            <.input class="w-full" field={@message_form[:message]} placeholder="Message" />
+            <.button
+              type="button"
+              phx-click={JS.dispatch("make_call") |> show_modal("call-modal")}
+            >
+              <.icon name="hero-phone-arrow-up-right" />
+            </.button>
           </.form>
         </div>
       </div>
     <% end %>
   </div>
 </div>
+<.modal id="call-modal">
+  <h2 class="text-center text-xl font-bold pb-8">Group call</h2>
+  <div class="flex gap-3">
+    <video id="local-video" class="w-1/2" />
+    <video id="remote-video" class="w-1/2" />
+  </div>
+</.modal>
