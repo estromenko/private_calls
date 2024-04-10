@@ -16,6 +16,14 @@ export async function makeCall(liveSocket, peerConnection) {
   liveSocket.pushEvent("rtc_message", { message: { offer } })
 }
 
+export async function endCall() {
+  const localVideo = document.querySelector("#local-video")
+
+  localVideo.srcObject?.getTracks().forEach((track) => {
+    track.stop()
+  })
+}
+
 export async function handleVideo(liveSocket, peerConnection) {
   const remoteVideo = document.querySelector("#remote-video")
 

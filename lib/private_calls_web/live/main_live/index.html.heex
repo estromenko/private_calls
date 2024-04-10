@@ -1,10 +1,6 @@
 <.flash_group flash={@flash} />
 <.app_header current_user={@current_user} />
-<div
-  class="flex h-[calc(100vh-50px)] w-full"
-  phx-window-keydown="process_escape_key"
-  phx-key="Escape"
->
+<div class="flex h-[calc(100vh-50px)] w-full">
   <aside class="flex flex-col bg-zinc-900 w-72">
     <div class="p-2">
       <.form for={@search_form} phx-change="search">
@@ -116,7 +112,7 @@
     <% end %>
   </div>
 </div>
-<.modal id="call-modal">
+<.modal id="call-modal" on_cancel={JS.dispatch("end_call")}>
   <h2 class="text-center text-xl font-bold pb-8">Group call</h2>
   <div class="flex gap-3">
     <video id="local-video" class="w-1/2" />

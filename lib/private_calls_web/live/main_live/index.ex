@@ -87,11 +87,6 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
-  def handle_event("process_escape_key", _params, socket) do
-    {:noreply, push_patch(socket, to: ~p"/chats/")}
-  end
-
-  @impl true
   def handle_event("delete_message", %{"id" => id}, socket) do
     {message_id, _} = Integer.parse(id)
 

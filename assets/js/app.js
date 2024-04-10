@@ -21,7 +21,7 @@ import "phoenix_html"
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import { handleVideo, makeCall } from "./video"
+import { handleVideo, makeCall, endCall } from "./video"
 
 const hooks = {}
 
@@ -40,6 +40,7 @@ hooks.Chat = {
     handleVideo(this, peerConnection)
 
     window.addEventListener("make_call", () => makeCall(this, peerConnection))
+    window.addEventListener("end_call", endCall)
   }
 }
 
