@@ -94,4 +94,6 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
+EXPOSE 8080
+
 CMD ["sh", "-c", "/app/bin/migrate && /app/bin/server"]
