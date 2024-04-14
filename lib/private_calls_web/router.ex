@@ -3,6 +3,10 @@ defmodule PrivateCallsWeb.Router do
 
   import PrivateCallsWeb.UserAuth
 
+  use Kaffy.Routes,
+    scope: "/admin",
+    pipe_through: [:browser, :require_authenticated_user, :require_superuser]
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -64,27 +68,12 @@ defmodule PrivateCallsWeb.Router do
     end
   end
 
-  scope "/admin", PrivateCallsWeb do
+  scope "/live-dashboard", PrivateCallsWeb do
     import Phoenix.LiveDashboard.Router
 
     pipe_through [:browser, :require_authenticated_user, :require_superuser]
 
-    live_session :require_superuser,
-      on_mount: [{PrivateCallsWeb.UserAuth, :ensure_authenticated}] do
-      live "/chats", Admin.ChatLive.Index, :index
-      live "/chats/new", Admin.ChatLive.Index, :new
-      live "/chats/:id/edit", ChatLive.Index, :edit
-      live "/chats/:id", Admin.ChatLive.Show, :show
-      live "/chats/:id/show/edit", Admin.ChatLive.Show, :edit
-
-      live "/messages", Admin.MessageLive.Index, :index
-      live "/messages/new", Admin.MessageLive.Index, :new
-      live "/messages/:id/edit", Admin.MessageLive.Index, :edit
-      live "/messages/:id", Admin.MessageLive.Show, :show
-      live "/messages/:id/show/edit", Admin.MessageLive.Show, :edit
-    end
-
-    live_dashboard "/dashboard",
+    live_dashboard "/",
       metrics: PrivateCallsWeb.Telemetry,
       ecto_repos: [PrivateCalls.Repo]
   end

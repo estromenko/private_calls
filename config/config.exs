@@ -64,3 +64,12 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+config :kaffy,
+  otp_app: :private_calls,
+  ecto_repo: PrivateCalls.Repo,
+  router: PrivateCallsWeb.Router,
+  admin_title: "Private Calls Admin",
+  hide_dashboard: true,
+  home_page: [kaffy: :dashboard],
+  enable_context_dashboards: true

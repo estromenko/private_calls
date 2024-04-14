@@ -59,7 +59,9 @@ defmodule PrivateCalls.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.1.1"},
-      {:bandit, "~> 1.2"}
+      {:bandit, "~> 1.2"},
+      {:kaffy, github: "drobban/kaffy", ref: "fd0ee0b"}
+      # {:kaffy, "~> 0.10.0"}
     ]
   end
 

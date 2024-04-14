@@ -21,7 +21,9 @@ defmodule PrivateCalls.MessagesTest do
     end
 
     test "create_message/1 with valid data creates a message" do
-      valid_attrs = %{text: "some text"}
+      {chat, user} = make_chat_and_user()
+
+      valid_attrs = %{text: "some text", chat_id: chat.id, sender_id: user.id}
 
       assert {:ok, %Message{} = message} = Messages.create_message(valid_attrs)
       assert message.text == "some text"

@@ -7,11 +7,31 @@ defmodule PrivateCalls.MessagesFixtures do
   @doc """
   Generate a message.
   """
+  def make_chat_and_user() do
+    {:ok, user} =
+      PrivateCalls.Users.register_user(%{
+        email: "admin@admin.admin",
+        password: "adminadminadmin"
+      })
+
+    {:ok, chat} =
+      PrivateCalls.Chats.create_chat(%{
+        name: "general",
+        owner_id: user.id
+      })
+
+    {chat, user}
+  end
+
   def message_fixture(attrs \\ %{}) do
+    {chat, user} = make_chat_and_user()
+
     {:ok, message} =
       attrs
       |> Enum.into(%{
-        text: "some text"
+        text: "some text",
+        chat_id: chat.id,
+        sender_id: user.id
       })
       |> PrivateCalls.Messages.create_message()
 
