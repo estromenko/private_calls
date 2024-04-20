@@ -21,7 +21,7 @@ import "phoenix_html"
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import { handleVideo, makeCall, endCall } from "./video"
+import * as call from "./call"
 
 const hooks = {}
 
@@ -32,15 +32,19 @@ hooks.Message = {
   }
 }
 
-hooks.Chat = {
-  mounted() {
-    const configuration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] }
-    const peerConnection = new RTCPeerConnection(configuration)
+hooks.Call = {
+  async mounted() {
+    this.stream = await call.getMediaStream()
 
-    handleVideo(this, peerConnection)
+    call.playOwnVideo(this.stream)
 
-    window.addEventListener("make_call", () => makeCall(this, peerConnection))
-    window.addEventListener("end_call", endCall)
+    this.peerConnection = call.createPeerConnection()
+
+    call.makeCall(this, this.peerConnection, this.stream)
+    call.playRemoteVideos(this, this.peerConnection)
+  },
+  destroyed() {
+    call.leaveCall(this, this.peerConnection, this.stream)
   }
 }
 

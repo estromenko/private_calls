@@ -63,6 +63,7 @@ defmodule PrivateCallsWeb.Router do
       on_mount: [{PrivateCallsWeb.UserAuth, :ensure_authenticated}] do
       live "/chats", MainLive.Index
       live "/chats/:id", MainLive.Index
+      live "/chats/:id/video", MainLive.Index, :video
       live "/users/settings", UserSettingsLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end

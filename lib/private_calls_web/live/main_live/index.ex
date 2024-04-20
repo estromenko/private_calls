@@ -33,6 +33,11 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
     PrivateCallsWeb.Endpoint.subscribe("notifications")
     PrivateCallsWeb.Endpoint.subscribe("chat_#{selected_chat_id}")
+
+    if socket.assigns.live_action == :video do
+      PrivateCallsWeb.Endpoint.broadcast_from(self(), "notifications", "call", selected_chat.name)
+    end
+
     {:noreply, socket |> assign(selected_chat: selected_chat) |> assign(messages: messages)}
   end
 
@@ -115,8 +120,25 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
+  def handle_event("rtc_close", %{"streamId" => stream_id}, socket) do
+    PrivateCallsWeb.Endpoint.broadcast_from(
+      self(),
+      "chat_#{socket.assigns.selected_chat.id}",
+      "rtc_close",
+      stream_id
+    )
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_info(%{event: "rtc_message", payload: message}, socket) do
     {:noreply, push_event(socket, "rtc_message", message)}
+  end
+
+  @impl true
+  def handle_info(%{event: "rtc_close", payload: stream_id}, socket) do
+    {:noreply, push_event(socket, "rtc_close", %{stream_id: stream_id})}
   end
 
   @impl true
@@ -150,5 +172,15 @@ defmodule PrivateCallsWeb.MainLive.Index do
       chat = Chats.get_chat(message.chat_id)
       {:noreply, put_flash(socket, :message, "#{chat.name}: #{message.text}")}
     end
+  end
+
+  @impl true
+  def handle_info(%{event: "call", payload: chat_name}, socket) do
+    {:noreply,
+     put_flash(
+       socket,
+       :message,
+       "#{socket.assigns.current_user.email} just joined chat \"#{chat_name}\""
+     )}
   end
 end

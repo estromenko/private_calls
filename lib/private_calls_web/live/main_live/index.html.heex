@@ -34,11 +34,7 @@
         <%= if length(@messages) == 0 do %>
           <div class="text-center">There are no messages yet</div>
         <% else %>
-          <div
-            id="messages"
-            phx-hook="Chat"
-            class="flex flex-col gap-4 overflow-y-scroll h-full p-4"
-          >
+          <div id="messages" class="flex flex-col gap-4 overflow-y-scroll h-full p-4">
             <div
               :for={message <- @messages}
               class={[message.sender_id == @current_user.id && "flex justify-end"]}
@@ -100,10 +96,7 @@
             phx-change="message_typing"
           >
             <.input class="w-full" field={@message_form[:message]} placeholder="Message" />
-            <.button
-              type="button"
-              phx-click={JS.dispatch("make_call") |> show_modal("call-modal")}
-            >
+            <.button type="button" phx-click={JS.patch(~p"/chats/#{@selected_chat.id}/video")}>
               <.icon name="hero-phone-arrow-up-right" />
             </.button>
           </.form>
@@ -112,10 +105,14 @@
     <% end %>
   </div>
 </div>
-<.modal id="call-modal" on_cancel={JS.dispatch("end_call")}>
+<.modal
+  :if={@live_action == :video}
+  show
+  id="call-modal"
+  on_cancel={JS.dispatch("end_call") |> JS.patch(~p"/chats/#{@selected_chat.id}")}
+>
   <h2 class="text-center text-xl font-bold pb-8">Group call</h2>
-  <div class="flex gap-3">
+  <div id="videos" class="flex justify-center gap-3" phx-hook="Call">
     <video id="local-video" class="w-1/2" />
-    <video id="remote-video" class="w-1/2" />
   </div>
 </.modal>
