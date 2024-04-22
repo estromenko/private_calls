@@ -12,6 +12,7 @@ defmodule PrivateCalls.Application do
       PrivateCalls.Repo,
       {DNSCluster, query: Application.get_env(:private_calls, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: PrivateCalls.PubSub},
+      PrivateCallsWeb.UserPresence,
       # Start the Finch HTTP client for sending emails
       {Finch, name: PrivateCalls.Finch},
       # Start a worker by calling: PrivateCalls.Worker.start_link(arg)

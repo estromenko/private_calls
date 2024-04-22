@@ -112,7 +112,26 @@
   on_cancel={JS.dispatch("end_call") |> JS.patch(~p"/chats/#{@selected_chat.id}")}
 >
   <h2 class="text-center text-xl font-bold pb-8">Group call</h2>
-  <div id="videos" class="flex justify-center gap-3" phx-hook="Call">
-    <video id="local-video" class="w-1/2" />
+  <div class="flex">
+    <div
+      id="videos"
+      class="grid gap-3 grid-flow-col auto-cols-fr"
+      phx-hook="Call"
+      data-user={@current_user.id}
+      data-peers={Enum.join(Enum.map(@users_in_call, & &1.id), ",")}
+    >
+      <div class="flex flex-col items-center">
+        <video id="local-video" />
+        <%= @current_user.email %>
+      </div>
+      <div
+        :for={user <- @users_in_call}
+        :if={user.id != @current_user.id}
+        class="flex flex-col items-center"
+      >
+        <video id={"user-#{user.id}"} data-id={user.id} />
+        <%= user.email %>
+      </div>
+    </div>
   </div>
 </.modal>

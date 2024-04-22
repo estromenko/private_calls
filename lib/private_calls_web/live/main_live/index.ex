@@ -18,7 +18,8 @@ defmodule PrivateCallsWeb.MainLive.Index do
      |> assign(messages: [])
      |> assign(search_form: to_form(%{"search" => ""}))
      |> assign(message_form: to_form(%{"message" => ""}))
-     |> assign(typing_users: [])}
+     |> assign(typing_users: [])
+     |> assign(users_in_call: [])}
   end
 
   @impl true
@@ -29,16 +30,49 @@ defmodule PrivateCallsWeb.MainLive.Index do
 
     if socket.assigns.selected_chat do
       PrivateCallsWeb.Endpoint.unsubscribe("chat_#{socket.assigns.selected_chat.id}")
+
+      if socket.assigns.live_action == :video do
+        PrivateCallsWeb.Endpoint.subscribe("user_#{socket.assigns.current_user.id}")
+
+        PrivateCallsWeb.Endpoint.broadcast_from(
+          self(),
+          "notifications",
+          "call",
+          selected_chat.name
+        )
+
+        PrivateCallsWeb.UserPresence.track(
+          self(),
+          "chat_#{selected_chat_id}",
+          socket.assigns.current_user.id,
+          socket.assigns.current_user
+        )
+      else
+        PrivateCallsWeb.Endpoint.unsubscribe("user_#{socket.assigns.current_user.id}")
+
+        PrivateCallsWeb.UserPresence.untrack(
+          self(),
+          "chat_#{selected_chat_id}",
+          socket.assigns.current_user.id
+        )
+      end
     end
 
     PrivateCallsWeb.Endpoint.subscribe("notifications")
     PrivateCallsWeb.Endpoint.subscribe("chat_#{selected_chat_id}")
 
-    if socket.assigns.live_action == :video do
-      PrivateCallsWeb.Endpoint.broadcast_from(self(), "notifications", "call", selected_chat.name)
-    end
+    {:noreply,
+     socket
+     |> assign(selected_chat: selected_chat)
+     |> assign(messages: messages)
+     |> assign(users_in_call: get_users_in_call(selected_chat_id))}
+  end
 
-    {:noreply, socket |> assign(selected_chat: selected_chat) |> assign(messages: messages)}
+  def get_users_in_call(selected_chat_id) do
+    PrivateCallsWeb.UserPresence.list("chat_#{selected_chat_id}")
+    |> Enum.map(fn {_user_id, user} ->
+      List.first(user[:metas])
+    end)
   end
 
   @impl true
@@ -111,7 +145,7 @@ defmodule PrivateCallsWeb.MainLive.Index do
   def handle_event("rtc_message", %{"message" => message}, socket) do
     PrivateCallsWeb.Endpoint.broadcast_from(
       self(),
-      "chat_#{socket.assigns.selected_chat.id}",
+      "user_#{message["toUserId"]}",
       "rtc_message",
       message
     )
@@ -120,12 +154,12 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
-  def handle_event("rtc_close", %{"streamId" => stream_id}, socket) do
+  def handle_event("rtc_close", %{"userId" => user_id}, socket) do
     PrivateCallsWeb.Endpoint.broadcast_from(
       self(),
       "chat_#{socket.assigns.selected_chat.id}",
       "rtc_close",
-      stream_id
+      user_id
     )
 
     {:noreply, socket}
@@ -137,8 +171,8 @@ defmodule PrivateCallsWeb.MainLive.Index do
   end
 
   @impl true
-  def handle_info(%{event: "rtc_close", payload: stream_id}, socket) do
-    {:noreply, push_event(socket, "rtc_close", %{stream_id: stream_id})}
+  def handle_info(%{event: "rtc_close", payload: user_id}, socket) do
+    {:noreply, push_event(socket, "rtc_close", %{user_id: user_id})}
   end
 
   @impl true
@@ -182,5 +216,11 @@ defmodule PrivateCallsWeb.MainLive.Index do
        :message,
        "#{socket.assigns.current_user.email} just joined chat \"#{chat_name}\""
      )}
+  end
+
+  @impl true
+  def handle_info(%{event: "presence_diff", payload: _payload}, socket) do
+    users_in_call = get_users_in_call(socket.assigns.selected_chat.id)
+    {:noreply, assign(socket, users_in_call: users_in_call)}
   end
 end

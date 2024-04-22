@@ -34,17 +34,25 @@ hooks.Message = {
 
 hooks.Call = {
   async mounted() {
-    this.stream = await call.getMediaStream()
+    window.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    window.localUserId = this.el.dataset.user
+    window.peers = {}
 
-    call.playOwnVideo(this.stream)
+    const userIds = this.el.dataset.peers.split(",")
+    userIds.forEach((userId) => {
+      if (userId === this.userId) {
+        return
+      }
 
-    this.peerConnection = call.createPeerConnection()
+      window.peers[userId] = call.createPeerConnection(this, userId)
+      call.makeCall(this, userId)
+    })
 
-    call.makeCall(this, this.peerConnection, this.stream)
-    call.playRemoteVideos(this, this.peerConnection)
+    call.playOwnVideo()
+    call.playRemoteVideos(this)
   },
   destroyed() {
-    call.leaveCall(this, this.peerConnection, this.stream)
+    call.leaveCall(this)
   }
 }
 
