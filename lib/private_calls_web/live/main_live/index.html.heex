@@ -1,7 +1,10 @@
 <.flash_group flash={@flash} />
 <.app_header current_user={@current_user} />
 <div class="flex h-[calc(100vh-50px)] w-full">
-  <aside class="flex flex-col bg-zinc-900 w-72">
+  <aside class={[
+    "flex flex-col bg-zinc-900 w-full sm:w-72",
+    @selected_chat && "hidden sm:block"
+  ]}>
     <div class="p-2">
       <.form for={@search_form} phx-change="search">
         <.input placeholder="Search" id="search" field={@search_form[:search]} />
@@ -23,18 +26,23 @@
       </.link>
     </div>
   </aside>
-  <div class="w-full">
-    <%= if !@selected_chat do %>
+  <%= if !@selected_chat do %>
+    <div class="hidden sm:block w-full">
       <div class="h-full flex justify-center items-center">
         <div>Select chat to start messaging</div>
       </div>
-    <% else %>
-      <div class="h-full flex flex-col justify-between">
+    </div>
+  <% else %>
+    <div class="w-full">
+      <div class="h-full sm:flex flex-col justify-between">
         <div class="bg-slate-800 text-white p-4"><%= @selected_chat.name %></div>
         <%= if length(@messages) == 0 do %>
-          <div class="text-center">There are no messages yet</div>
+          <div class="h-full flex justify-center items-center">There are no messages yet</div>
         <% else %>
-          <div id="messages" class="flex flex-col gap-4 overflow-y-scroll h-full p-4">
+          <div
+            id="messages"
+            class="flex flex-col gap-4 overflow-y-scroll h-full p-4 pb-20 sm:pb-4"
+          >
             <div
               :for={message <- @messages}
               class={[message.sender_id == @current_user.id && "flex justify-end"]}
@@ -79,7 +87,7 @@
             </div>
           </div>
         <% end %>
-        <div class="p-4">
+        <div class="p-4 w-full fixed bottom-0 sm:block">
           <div :if={length(@typing_users) > 0} class="text-xs text-slate-600 transition-all">
             <%= Enum.join(Enum.map(Enum.uniq(@typing_users), & &1.email), ", ") %>
             <%= if length(Enum.uniq(@typing_users)) == 1 do %>
@@ -102,8 +110,8 @@
           </.form>
         </div>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </div>
 <.modal
   :if={@live_action == :video}
