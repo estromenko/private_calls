@@ -16,3 +16,27 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Docs: https://hexdocs.pm/phoenix
   * Forum: https://elixirforum.com/c/phoenix-forum
   * Source: https://github.com/phoenixframework/phoenix
+
+
+## Example production Nginx configuration
+```
+server {
+    listen 80;
+    server_name _;
+
+    access_log off;
+    error_log off;
+
+    location / {
+        proxy_set_header Host $host;
+        proxy_set_header x-real-ip $remote_addr;
+        proxy_set_header X-forwarded-for $proxy_add_x_forwarded_for;
+        proxy_ssl_server_name on;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_pass http://localhost:4000;
+    }
+}
+```
