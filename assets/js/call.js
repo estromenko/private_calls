@@ -1,5 +1,10 @@
+const iceServers = [
+  { urls: 'stun:freeturn.net:5349' },
+  { urls: 'turns:freeturn.tel:5349', username: 'free', credential: 'free' },
+]
+
 export function createPeerConnection(liveSocket, userId) {
-  const configuration = { "iceServers": [{ "urls": "stun:stun.l.google.com:19302" }] }
+  const configuration = { "iceServers": iceServers }
   const peerConnection = new RTCPeerConnection(configuration)
 
   window.stream.getTracks().forEach((track) => {
