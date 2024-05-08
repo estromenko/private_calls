@@ -56,12 +56,6 @@ defmodule PrivateCallsWeb.UserRegistrationLive do
   def handle_event("save", %{"user" => user_params}, socket) do
     case Users.register_user(user_params) do
       {:ok, user} ->
-        {:ok, _} =
-          Users.deliver_user_confirmation_instructions(
-            user,
-            &url(~p"/users/confirm/#{&1}")
-          )
-
         changeset = Users.change_user_registration(user)
         {:noreply, socket |> assign(trigger_submit: true) |> assign_form(changeset)}
 
